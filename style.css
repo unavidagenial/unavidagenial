@@ -1,0 +1,893 @@
+/* =============================================
+   VARIABLES GLOBALES — TEMA HALLOWEEN OSCURO
+   ============================================= */
+:root {
+    --bg: #050508;
+    --bg2: #0a0a0f;
+    --text: #00ff88;
+    --accent: #00ff88;
+    --accent2: #ff3e3e;
+    --card-bg: #0d0d12;
+    --border: #00ff88;
+    --glow: 0 0 8px var(--accent), 0 0 20px var(--accent), 0 0 40px color-mix(in srgb, var(--accent) 30%, transparent);
+    --glow-red: 0 0 8px #ff3e3e, 0 0 20px #ff3e3e44;
+    --radius: 4px; /* Bordes más angulares para look cyberpunk/halloween */
+    --font-title: 'Exo 2', sans-serif;
+    --font-mono: 'Share Tech Mono', monospace;
+    --font-hud: 'Orbitron', sans-serif;
+}
+
+/* Modo claro — mantiene funcionalidad sin romper el look */
+.light-theme {
+    --bg: #f0ece4;
+    --bg2: #e8e2d8;
+    --text: #1a0a2e;
+    --accent: #6a0dad;
+    --card-bg: #ffffff;
+    --border: #6a0dad;
+    --glow: 0 0 8px #6a0dad88;
+}
+
+/* =============================================
+   RESET & BASE
+   ============================================= */
+*, *::before, *::after {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+    font-family: var(--font-mono);
+    background-color: var(--bg);
+    color: var(--text);
+    transition: background-color 0.4s ease, color 0.4s ease;
+    overflow-x: hidden;
+    /* Cursor personalizado: crosshair refuerza sensación de apuntador/linterna */
+    cursor: crosshair;
+}
+
+/* =============================================
+   CANVAS DE PARTÍCULAS — detrás de todo
+   ============================================= */
+#bg-particles,
+#login-particles {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.5;
+}
+
+/* =============================================
+   EFECTO LINTERNA — la magia principal
+   Ahora con degradado más dramático y tinte rojo
+   ============================================= */
+#flashlight {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    /* Círculo de luz con tinte verde-ámbar, oscuridad total afuera */
+    background: radial-gradient(
+        circle 200px at var(--cursor-x, 50%) var(--cursor-y, 50%),
+        transparent 0%,
+        rgba(0, 10, 5, 0.55) 40%,
+        rgba(0, 0, 0, 0.97) 100%
+    );
+    z-index: 9999;
+    /* Transición suave del círculo al mover el cursor */
+    transition: background 0.05s linear;
+}
+
+/* Borde de vignette fijo para profundidad extra */
+body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.7) 100%);
+    pointer-events: none;
+    z-index: 9998;
+}
+
+/* =============================================
+   EFECTO SCANLINES — líneas horizontales sutiles
+   Da textura de pantalla CRT vieja
+   ============================================= */
+body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 2px,
+        rgba(0, 255, 136, 0.015) 2px,
+        rgba(0, 255, 136, 0.015) 4px
+    );
+    pointer-events: none;
+    z-index: 9997;
+    animation: scanlineScroll 8s linear infinite;
+}
+
+@keyframes scanlineScroll {
+    from { background-position: 0 0; }
+    to   { background-position: 0 100vh; }
+}
+
+/* =============================================
+   EFECTO GLITCH — animación tipo GIF para títulos
+   Desplazamiento de capas RGB (RGB split)
+   ============================================= */
+.glitch-text {
+    position: relative;
+    display: inline-block;
+    animation: glitchBase 5s infinite;
+}
+
+/* Capa fantasma ROJA (desplazada izquierda) */
+.glitch-text::before {
+    content: attr(data-text);
+    position: absolute;
+    inset: 0;
+    color: #ff3e3e;
+    clip-path: polygon(0 20%, 100% 20%, 100% 40%, 0 40%);
+    animation: glitchRed 5s infinite;
+    opacity: 0.8;
+}
+
+/* Capa fantasma CIAN (desplazada derecha) */
+.glitch-text::after {
+    content: attr(data-text);
+    position: absolute;
+    inset: 0;
+    color: #00eeff;
+    clip-path: polygon(0 60%, 100% 60%, 100% 80%, 0 80%);
+    animation: glitchCyan 5s infinite;
+    opacity: 0.8;
+}
+
+@keyframes glitchBase {
+    0%, 90%, 100% { transform: translate(0); }
+    91%           { transform: translate(-2px, 1px); }
+    93%           { transform: translate(2px, -1px); }
+    95%           { transform: translate(-1px, 0); }
+    97%           { transform: translate(1px, 2px); }
+}
+
+@keyframes glitchRed {
+    0%, 89%, 100% { transform: translate(0);       opacity: 0; }
+    90%           { transform: translate(-4px, 0); opacity: 0.8; }
+    92%           { transform: translate(4px, 0);  opacity: 0.8; }
+    94%           { transform: translate(-2px, 0); opacity: 0.8; }
+    96%           { transform: translate(0);       opacity: 0; }
+}
+
+@keyframes glitchCyan {
+    0%, 89%, 100% { transform: translate(0);      opacity: 0; }
+    90%           { transform: translate(4px, 0); opacity: 0.8; }
+    92%           { transform: translate(-4px,0); opacity: 0.8; }
+    94%           { transform: translate(2px, 0); opacity: 0.8; }
+    96%           { transform: translate(0);      opacity: 0; }
+}
+
+/* =============================================
+   BOXES CON SCANLINE PROPIO — bordes glowing
+   Efecto de pantalla vieja dentro de cada card
+   ============================================= */
+.scanline-box {
+    position: relative;
+    border: 1px solid var(--accent);
+    box-shadow: var(--glow), inset 0 0 30px rgba(0,255,136,0.03);
+    overflow: hidden;
+}
+
+/* Línea de scan que baja continuamente dentro del box */
+.scanline-box::before {
+    content: '';
+    position: absolute;
+    top: -100%;
+    left: 0;
+    width: 100%;
+    height: 40%;
+    background: linear-gradient(
+        to bottom,
+        transparent,
+        rgba(0, 255, 136, 0.04) 50%,
+        transparent
+    );
+    animation: boxScan 4s linear infinite;
+    pointer-events: none;
+    z-index: 1;
+}
+
+@keyframes boxScan {
+    from { top: -40%; }
+    to   { top: 110%; }
+}
+
+/* =============================================
+   HEADER & NAV
+   ============================================= */
+header {
+    background: rgba(5, 5, 8, 0.92);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    position: fixed;
+    width: 100%;
+    z-index: 1000;
+    padding: 14px 0;
+    /* Borde inferior con brillo */
+    border-bottom: 1px solid var(--accent);
+    box-shadow: 0 2px 20px rgba(0, 255, 136, 0.2);
+}
+
+.nav-container {
+    max-width: 1100px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 24px;
+}
+
+nav h1 {
+    font-family: var(--font-hud);
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+}
+
+nav ul {
+    display: flex;
+    list-style: none;
+    gap: 24px;
+    align-items: center;
+}
+
+nav a {
+    text-decoration: none;
+    color: var(--text);
+    font-size: 0.85rem;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    position: relative;
+    transition: color 0.3s;
+}
+
+/* Subrayado animado en hover de links del nav */
+nav a::after {
+    content: '';
+    position: absolute;
+    bottom: -3px;
+    left: 0;
+    width: 0;
+    height: 1px;
+    background: var(--accent);
+    box-shadow: var(--glow);
+    transition: width 0.3s ease;
+}
+
+nav a:hover { color: var(--accent); }
+nav a:hover::after { width: 100%; }
+
+/* =============================================
+   SECCIONES GENERALES
+   ============================================= */
+section {
+    min-height: 100vh;
+    padding: 120px 20px 80px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    position: relative;
+    z-index: 1;
+}
+
+/* Separador entre secciones con efecto dashed glowing */
+section + section::before {
+    content: '— ✦ — ✦ — ✦ —';
+    position: absolute;
+    top: 60px;
+    font-size: 0.75rem;
+    letter-spacing: 8px;
+    color: var(--accent);
+    opacity: 0.3;
+}
+
+.section-title {
+    font-family: var(--font-hud);
+    font-size: 1.4rem;
+    letter-spacing: 4px;
+    margin-bottom: 30px;
+    text-transform: uppercase;
+}
+
+/* =============================================
+   HERO — sección principal
+   ============================================= */
+.hero-title {
+    font-family: var(--font-title); font-weight: 900;
+    font-size: clamp(2rem, 6vw, 4rem);
+    letter-spacing: 3px;
+    margin-bottom: 24px;
+    color: var(--accent);
+    text-shadow: var(--glow);
+    /* Animación de pulso que simula parpadeo de neón */
+    animation: neonPulse 3s ease-in-out infinite, glitchBase 5s infinite;
+}
+
+@keyframes neonPulse {
+    0%, 100% { text-shadow: var(--glow); }
+    50%       { text-shadow: 0 0 4px var(--accent), 0 0 10px var(--accent); }
+}
+
+/* Texto lluvia de código en el fondo del hero */
+.bg-code-rain {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.06;
+    /* Generado por JS con columnas de caracteres */
+}
+
+.highlight-text {
+    max-width: 680px;
+    font-size: 1.1rem;
+    line-height: 1.8;
+    margin-bottom: 32px;
+    position: relative;
+    z-index: 1;
+}
+
+.highlight-text strong {
+    color: var(--accent);
+    text-shadow: 0 0 6px var(--accent);
+}
+
+/* =============================================
+   PANEL DE CONFIGURACIÓN
+   ============================================= */
+.config-panel {
+    padding: 20px 28px;
+    margin: 20px 0;
+    border-radius: var(--radius);
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+}
+
+/* =============================================
+   AVATAR CON ANILLOS ORBITANTES
+   ============================================= */
+.avatar-wrapper {
+    position: relative;
+    width: 170px;
+    height: 170px;
+    margin: 30px auto 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Anillo exterior — gira despacio */
+.avatar-ring {
+    position: absolute;
+    inset: -10px;
+    border-radius: 50%;
+    border: 1px solid var(--accent);
+    box-shadow: var(--glow);
+    animation: ringRotate 8s linear infinite;
+    /* Puntos en el anillo para efecto orbital */
+    background: conic-gradient(
+        from 0deg,
+        transparent 0deg 340deg,
+        var(--accent) 340deg 345deg,
+        transparent 345deg 355deg,
+        var(--accent) 355deg 360deg
+    );
+}
+
+/* Anillo interior — gira en sentido contrario */
+.ring2 {
+    inset: -22px;
+    border: 1px dashed rgba(0, 255, 136, 0.3);
+    animation: ringRotate 12s linear infinite reverse;
+    box-shadow: none;
+    background: none;
+}
+
+@keyframes ringRotate {
+    from { transform: rotate(0deg); }
+    to   { transform: rotate(360deg); }
+}
+
+#profile-img {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    border: 2px solid var(--accent);
+    box-shadow: var(--glow);
+    position: relative;
+    z-index: 2;
+    transition: transform 0.3s ease;
+    /* Filtro hue para look de pantalla vieja */
+    filter: drop-shadow(0 0 8px var(--accent));
+}
+
+#profile-img:hover {
+    transform: scale(1.06);
+    filter: drop-shadow(0 0 16px var(--accent)) hue-rotate(20deg);
+}
+
+/* =============================================
+   BOTONES — bordes definidos con glow
+   ============================================= */
+.btn-main {
+    font-family: var(--font-hud);
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    background: transparent;
+    color: var(--accent);
+    border: 1px solid var(--accent);
+    border-radius: var(--radius);
+    padding: 12px 24px;
+    cursor: crosshair;
+    position: relative;
+    overflow: hidden;
+    transition: color 0.3s, box-shadow 0.3s;
+    box-shadow: 0 0 6px rgba(0,255,136,0.2), inset 0 0 6px rgba(0,255,136,0.05);
+}
+
+/* Relleno que avanza de izquierda a derecha en hover */
+.btn-main::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--accent);
+    transform: translateX(-101%);
+    transition: transform 0.3s ease;
+    z-index: 0;
+}
+
+.btn-main:hover::before { transform: translateX(0); }
+
+.btn-main:hover {
+    color: #000;
+    box-shadow: var(--glow);
+}
+
+.btn-main span { position: relative; z-index: 1; }
+
+.btn-nav {
+    font-family: var(--font-hud);
+    font-size: 0.7rem;
+    letter-spacing: 1px;
+    background: transparent;
+    color: var(--text);
+    border: 1px solid var(--accent);
+    border-radius: var(--radius);
+    padding: 8px 14px;
+    cursor: crosshair;
+    transition: all 0.3s;
+}
+
+.btn-nav:hover {
+    background: var(--accent);
+    color: #000;
+    box-shadow: var(--glow);
+}
+
+/* Botón iluminar — estado activo con fondo amarillo/blanco */
+.btn-light {
+    border-color: #ffe066;
+    color: #ffe066;
+}
+.btn-light:hover, .btn-light.active {
+    background: #ffe066 !important;
+    color: #000 !important;
+    box-shadow: 0 0 12px #ffe066, 0 0 30px #ffe06688 !important;
+    border-color: #ffe066 !important;
+}
+
+
+    font-family: var(--font-hud);
+    font-size: 0.7rem;
+    letter-spacing: 2px;
+    background: transparent;
+    color: var(--accent2);
+    border: 1px solid var(--accent2);
+    border-radius: var(--radius);
+    padding: 10px 20px;
+    cursor: crosshair;
+    transition: all 0.3s;
+    box-shadow: var(--glow-red);
+}
+
+.btn-dom:hover {
+    background: var(--accent2);
+    color: #000;
+}
+
+/* =============================================
+   INPUTS & TEXTAREA
+   ============================================= */
+input, textarea {
+    font-family: var(--font-mono);
+    font-size: 0.9rem;
+    background: rgba(0, 255, 136, 0.03);
+    color: var(--text);
+    border: 1px solid rgba(0, 255, 136, 0.4);
+    border-radius: var(--radius);
+    padding: 12px 18px;
+    margin: 6px;
+    transition: border-color 0.3s, box-shadow 0.3s;
+    outline: none;
+    min-width: 200px;
+}
+
+input:focus, textarea:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px rgba(0,255,136,0.15), var(--glow);
+    background: rgba(0, 255, 136, 0.05);
+}
+
+textarea {
+    width: 100%;
+    min-height: 120px;
+    resize: vertical;
+}
+
+/* Placeholder con color apagado */
+::placeholder { color: rgba(0, 255, 136, 0.35); }
+
+/* =============================================
+   DROPDOWN — menú desplegable
+   ============================================= */
+.dropdown-container {
+    width: 100%;
+    max-width: 680px;
+    margin: 20px 0;
+}
+
+.dropdown-btn {
+    font-family: var(--font-hud);
+    font-size: 0.85rem;
+    letter-spacing: 2px;
+    width: 100%;
+    padding: 16px 24px;
+    background: var(--card-bg);
+    color: var(--text);
+    border: 1px solid var(--accent);
+    border-radius: var(--radius);
+    cursor: crosshair;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: all 0.3s;
+    box-shadow: var(--glow);
+}
+
+.dropdown-btn:hover {
+    background: rgba(0,255,136,0.06);
+    box-shadow: var(--glow), inset 0 0 20px rgba(0,255,136,0.04);
+}
+
+.arrow-icon {
+    transition: transform 0.4s ease;
+    display: inline-block;
+}
+
+.arrow-icon.open { transform: rotate(180deg); }
+
+.dropdown-content {
+    display: none;
+    background: var(--card-bg);
+    padding: 24px;
+    border: 1px dashed var(--accent);
+    border-top: none;
+    border-radius: 0 0 var(--radius) var(--radius);
+    /* Animación de apertura con clip-path */
+    animation: slideDown 0.4s ease forwards;
+}
+
+@keyframes slideDown {
+    from { opacity: 0; transform: translateY(-10px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+.dropdown-content ul {
+    list-style: none;
+    text-align: left;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.dropdown-content li {
+    font-size: 0.9rem;
+    line-height: 1.6;
+    padding: 12px 16px;
+    border-left: 2px solid var(--accent);
+    background: rgba(0,255,136,0.02);
+    transition: background 0.3s;
+}
+
+.dropdown-content li:hover { background: rgba(0,255,136,0.05); }
+
+.item-icon { margin-right: 10px; }
+
+/* =============================================
+   SECCIÓN DINÁMICA DE PROYECTOS
+   ============================================= */
+.dynamic-section {
+    width: 100%;
+    max-width: 680px;
+    margin: 30px 0;
+    padding: 28px;
+    background: var(--card-bg);
+    border-radius: var(--radius);
+}
+
+.dynamic-section h4 {
+    font-family: var(--font-hud);
+    font-size: 0.85rem;
+    letter-spacing: 3px;
+    margin-bottom: 20px;
+    color: var(--accent);
+    text-shadow: 0 0 6px var(--accent);
+}
+
+.input-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
+    margin-bottom: 16px;
+}
+
+/* Ítems de la lista con animación de entrada */
+#dynamic-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    text-align: left;
+}
+
+#dynamic-list li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 16px;
+    border: 1px solid rgba(0,255,136,0.3);
+    border-radius: var(--radius);
+    background: rgba(0,255,136,0.02);
+    font-size: 0.9rem;
+    /* Entrada animada (se agrega por JS con clase) */
+    animation: itemEnter 0.3s ease forwards;
+}
+
+@keyframes itemEnter {
+    from { opacity: 0; transform: translateX(-20px); }
+    to   { opacity: 1; transform: translateX(0); }
+}
+
+#dynamic-list li button {
+    font-size: 0.65rem;
+    padding: 4px 10px;
+    border-color: var(--accent2);
+    color: var(--accent2);
+    background: transparent;
+    border-radius: var(--radius);
+    cursor: crosshair;
+    transition: all 0.3s;
+    min-width: auto;
+    margin: 0;
+}
+
+#dynamic-list li button:hover {
+    background: var(--accent2);
+    color: #000;
+}
+
+/* =============================================
+   FORMULARIO DE CONTACTO
+   ============================================= */
+.form-card {
+    width: 100%;
+    max-width: 600px;
+    padding: 40px;
+    background: var(--card-bg);
+    border-radius: var(--radius);
+}
+
+.form-card h3 {
+    font-family: var(--font-title);
+    font-size: 2rem;
+    letter-spacing: 3px;
+    margin-bottom: 28px;
+    color: var(--accent);
+    text-shadow: var(--glow);
+}
+
+#contact-form {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+#contact-form input,
+#contact-form textarea {
+    width: 100%;
+    margin: 4px 0;
+}
+
+/* Mensaje de éxito animado */
+#feedback-msg {
+    margin-top: 16px;
+    padding: 14px 20px;
+    border-left: 3px solid var(--accent);
+    font-size: 0.85rem;
+    letter-spacing: 1px;
+    background: rgba(0,255,136,0.05);
+    /* Aparece con animación de tipeo via JS */
+    display: none;
+    animation: fadeSlide 0.5s ease forwards;
+}
+
+@keyframes fadeSlide {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* =============================================
+   FOOTER
+   ============================================= */
+footer {
+    padding: 50px 40px;
+    border-top: 1px solid rgba(0,255,136,0.3);
+    text-align: center;
+    position: relative;
+    z-index: 1;
+}
+
+.footer-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+}
+
+.footer-divider {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 8px;
+    opacity: 0.5;
+}
+
+.divider-line {
+    width: 120px;
+    height: 1px;
+    background: linear-gradient(to right, transparent, var(--accent), transparent);
+}
+
+/* Calaveras con animación de floteo */
+.skull-icon {
+    font-size: 1.2rem;
+    display: inline-block;
+    animation: floatSkull 3s ease-in-out infinite;
+}
+
+.skull-icon:last-child { animation-delay: 1.5s; }
+
+@keyframes floatSkull {
+    0%, 100% { transform: translateY(0); }
+    50%       { transform: translateY(-6px); }
+}
+
+footer p {
+    font-family: var(--font-hud);
+    font-size: 0.75rem;
+    letter-spacing: 3px;
+    opacity: 0.6;
+}
+
+/* =============================================
+   PANTALLA DE LOGIN
+   ============================================= */
+#login-screen {
+    position: fixed;
+    inset: 0;
+    background: #000;
+    z-index: 10000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+}
+
+.login-card {
+    position: relative;
+    z-index: 1;
+    padding: 48px 40px;
+    /* Borde doble con glow para máximo impacto en el login */
+    border: 1px solid var(--accent);
+    box-shadow: var(--glow), inset 0 0 40px rgba(0,255,136,0.04), 0 0 80px rgba(0,255,136,0.1);
+    border-radius: var(--radius);
+    text-align: center;
+    background: rgba(5,5,8,0.95);
+    max-width: 380px;
+    width: 90%;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    animation: loginAppear 0.8s ease forwards;
+}
+
+@keyframes loginAppear {
+    from { opacity: 0; transform: scale(0.9) translateY(20px); }
+    to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.login-skull {
+    font-size: 3rem;
+    animation: floatSkull 2s ease-in-out infinite;
+    display: block;
+    margin-bottom: 4px;
+}
+
+.login-card h2 {
+    font-family: var(--font-hud);
+    font-size: 1rem;
+    letter-spacing: 3px;
+    color: var(--accent);
+    text-shadow: var(--glow);
+}
+
+.login-sub {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: rgba(0,255,136,0.4);
+    letter-spacing: 1px;
+    margin-bottom: 4px;
+}
+
+.login-hint {
+    font-size: 0.7rem;
+    color: rgba(0,255,136,0.25);
+    letter-spacing: 1px;
+    margin-top: 4px;
+}
+
+.login-card input {
+    width: 100%;
+    margin: 2px 0;
+}
+
+.login-card .btn-main {
+    width: 100%;
+    margin-top: 6px;
+}
+
+/* =============================================
+   RESPONSIVE — mobile básico
+   ============================================= */
+@media (max-width: 640px) {
+    .nav-container { flex-direction: column; gap: 12px; }
+    nav ul { gap: 12px; flex-wrap: wrap; justify-content: center; }
+    .hero-title { font-size: 1.8rem; }
+    .form-card { padding: 24px 16px; }
+    .dynamic-section { padding: 20px 16px; }
+}
