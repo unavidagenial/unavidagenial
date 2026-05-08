@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sergio Gomez Portafolio</title>
-    <!-- Fuente principal: Exo 2 (robot/tech) + Share Tech Mono (código) + Orbitron (HUD) -->
     <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@300;600;900&family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
@@ -12,12 +11,11 @@
 
     <!-- ===== PANTALLA DE LOGIN ===== -->
     <div id="login-screen">
-        <!-- Partículas de fondo en el login -->
         <canvas id="login-particles"></canvas>
         <div class="login-card">
             <div class="login-skull">💀</div>
-            <h2>IDENTIFICACIÓN REQUERIDA</h2>
-            <p class="login-sub">// acceso restringido al sistema //</p>
+            <h2>Si sos humano entras bajo tu responsabilidad</h2>
+            <p class="login-sub">// acceso al sistema //</p>
             <input type="text" id="user" placeholder="Usuario...">
             <input type="password" id="pass" placeholder="Contraseña...">
             <button onclick="validarLogin()" class="btn-main">
@@ -30,16 +28,12 @@
     <!-- ===== CONTENIDO PRINCIPAL ===== -->
     <div id="main-content" style="display: none;">
 
-        <!-- Efecto linterna siguiendo el cursor -->
         <div id="flashlight"></div>
-
-        <!-- Canvas para partículas flotantes (murciélagos, chispas) -->
         <canvas id="bg-particles"></canvas>
 
-        <!-- ===== HEADER / NAV ===== -->
         <header>
             <nav class="nav-container">
-                <h1 id="brand-name" class="glitch-text" data-text="Sergio Gomez">Sergio Gomez</h1>
+                <h1 id="brand-name" class="glitch-text" data-text="Sergio G. Villalobo">Sergio G. Villalobo</h1>
                 <ul>
                     <li><a href="#inicio">Inicio</a></li>
                     <li><a href="#contacto">Contacto</a></li>
@@ -50,27 +44,21 @@
         </header>
 
         <main>
-            <!-- ===== SECCIÓN HERO / PRESENTACIÓN ===== -->
             <section id="inicio" class="hero">
                 <div class="hero-content">
-                    <!-- Título con animación glitch y tipeo -->
-                    <h2 id="main-title" class="glitch-text hero-title" data-text="IMPULSANDO EL COMERCIO LOCAL_">IMPULSANDO EL COMERCIO LOCAL_</h2>
-
-                    <!-- Texto decorativo flotante de fondo -->
-                    <div class="bg-code-rain" aria-hidden="true"></div>
+                    <h2 id="main-title" class="glitch-text hero-title" data-text="IMPULSANDO EL COMERCIO LOCAL_">LA AUTOMATIZACION ES INEVITABLE_</h2>
 
                     <p class="highlight-text">
                         Estamos trabajando con <strong>negocios locales</strong> promocionando los servicios de 
                         programación y desarrollo de apps para digitalizar tu éxito.
+                        Somos una inteligencia artesanal que busca ayudar a la integración de la IA en ámbitos de producción.
                     </p>
 
-                    <!-- Panel de configuración con efecto scan -->
                     <div class="config-panel scanline-box">
                         <input type="text" id="input-name" placeholder="Personalizar título..." oninput="actualizarNombre()">
                         <button onclick="cambiarImagen()" class="btn-main">CAMBIAR AVATAR</button>
                     </div>
 
-                    <!-- Avatar con borde animado y halo -->
                     <div class="avatar-wrapper">
                         <div class="avatar-ring"></div>
                         <div class="avatar-ring ring2"></div>
@@ -79,11 +67,8 @@
                 </div>
             </section>
 
-            <!-- ===== SECCIÓN SERVICIOS ===== -->
             <section id="contenido">
                 <h3 class="section-title glitch-text" data-text="INFORMACIÓN RELEVANTE">INFORMACIÓN RELEVANTE</h3>
-
-                <!-- Menú desplegable con animación -->
                 <div class="dropdown-container">
                     <button class="dropdown-btn" onclick="toggleInfo()">
                         <span>Ver detalles de servicios</span>
@@ -91,7 +76,6 @@
                     </button>
                     <div id="info-extra" class="dropdown-content">
                         <ul>
-                            <!-- Cada ítem tiene su propio ícono temático -->
                             <li><span class="item-icon">👾</span><strong>Apps Móviles:</strong> Soluciones nativas para Android e iOS.</li>
                             <li><span class="item-icon">🌐</span><strong>Web Local:</strong> Páginas optimizadas para negocios de barrio.</li>
                             <li><span class="item-icon">📦</span><strong>Sistemas de Gestión:</strong> Control de stock y ventas.</li>
@@ -99,7 +83,6 @@
                     </div>
                 </div>
 
-                <!-- Proyectos dinámicos con animación al agregar -->
                 <div class="dynamic-section scanline-box">
                     <h4>⚡ REGISTRO DE PROYECTOS ACTIVOS</h4>
                     <div class="input-group">
@@ -110,7 +93,6 @@
                 </div>
             </section>
 
-            <!-- ===== SECCIÓN CONTACTO ===== -->
             <section id="contacto">
                 <div class="form-card scanline-box">
                     <h3 class="glitch-text" data-text="CONTACTO DIRECTO_">CONTACTO DIRECTO_</h3>
@@ -120,16 +102,13 @@
                         <textarea placeholder="Cuéntanos sobre tu negocio..."></textarea>
                         <button type="submit" class="btn-main">ENVIAR CONSULTA</button>
                     </form>
-                    <!-- Mensaje de feedback animado -->
                     <div id="feedback-msg"></div>
                 </div>
             </section>
         </main>
 
-        <!-- ===== FOOTER ===== -->
         <footer>
             <div class="footer-content">
-                <!-- Divisor animado con calaveras -->
                 <div class="footer-divider">
                     <span class="skull-icon">💀</span>
                     <span class="divider-line"></span>
