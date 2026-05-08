@@ -1,6 +1,5 @@
 // =============================================
-// 1. EFECTO LINTERNA — sigue el cursor con suavidad
-//    Ahora con interpolación para movimiento más fluido
+// 1. EFECTO LINTERNA suavizado
 // =============================================
 let targetX = window.innerWidth / 2;
 let targetY = window.innerHeight / 2;
@@ -12,9 +11,7 @@ document.addEventListener('mousemove', (e) => {
     targetY = e.clientY;
 });
 
-// Animación de suavizado (lerp) para la linterna
 function animateFlashlight() {
-    // Interpolación lineal: sigue al cursor con pequeño delay
     currentX += (targetX - currentX) * 0.12;
     currentY += (targetY - currentY) * 0.12;
     document.body.style.setProperty('--cursor-x', Math.round(currentX) + 'px');
@@ -25,16 +22,16 @@ animateFlashlight();
 
 
 // =============================================
-// 2. PARTÍCULAS — Canvas de fondo del main
-//    Simula chispas/polvo flotante Halloween
+// 2. PARTÍCULAS (gestión de inicio/parada)
 // =============================================
 function initParticles(canvasId) {
     const canvas = document.getElementById(canvasId);
-    if (!canvas) return;
+    if (!canvas) return { stop: () => {} };
 
     const ctx = canvas.getContext('2d');
     const particles = [];
     const COUNT = 60;
+    let animId;
 
     function resize() {
         canvas.width  = window.innerWidth;
@@ -43,7 +40,6 @@ function initParticles(canvasId) {
     resize();
     window.addEventListener('resize', resize);
 
-    // Clase partícula — punto brillante flotando
     class Particle {
         constructor() { this.reset(true); }
 
@@ -51,12 +47,11 @@ function initParticles(canvasId) {
             this.x    = Math.random() * canvas.width;
             this.y    = random ? Math.random() * canvas.height : canvas.height + 10;
             this.size = Math.random() * 1.8 + 0.3;
-            this.speedY = -(Math.random() * 0.5 + 0.2);  // sube despacio
-            this.speedX = (Math.random() - 0.5) * 0.4;   // deriva lateral
+            this.speedY = -(Math.random() * 0.5 + 0.2);
+            this.speedX = (Math.random() - 0.5) * 0.4;
             this.opacity = Math.random() * 0.6 + 0.1;
             this.life    = 0;
             this.maxLife = Math.random() * 200 + 100;
-            // Color: verde accent o rojo para variedad Halloween
             this.color   = Math.random() > 0.8 ? '#ff3e3e' : '#00ff88';
         }
 
@@ -64,7 +59,6 @@ function initParticles(canvasId) {
             this.y    += this.speedY;
             this.x    += this.speedX;
             this.life += 1;
-            // Parpadeo suave
             this.opacity = Math.sin((this.life / this.maxLife) * Math.PI) * 0.5 + 0.1;
             if (this.life >= this.maxLife || this.y < -10) this.reset();
         }
@@ -87,18 +81,24 @@ function initParticles(canvasId) {
     function loop() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         particles.forEach(p => { p.update(); p.draw(); });
-        requestAnimationFrame(loop);
+        animId = requestAnimationFrame(loop);
     }
     loop();
+
+    return {
+        stop: () => {
+            cancelAnimationFrame(animId);
+            window.removeEventListener('resize', resize);
+        }
+    };
 }
 
-// Iniciar partículas al cargar login y main
-initParticles('login-particles');
+// Iniciar partículas del login (guardamos para detenerlas después)
+const loginParticles = initParticles('login-particles');
 
 
 // =============================================
-// 3. MATRIX RAIN — lluvia de caracteres en el hero
-//    Canvas de código cayendo, efecto semitransparente
+// 3. MATRIX RAIN (optimizada con requestAnimationFrame)
 // =============================================
 function initMatrixRain(container) {
     const canvas = document.createElement('canvas');
@@ -108,10 +108,12 @@ function initMatrixRain(container) {
     `;
     container.appendChild(canvas);
 
-    const ctx   = canvas.getContext('2d');
-    const chars  = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789@#$%^&*(){}[]<>?/\\|~`';
+    const ctx = canvas.getContext('2d');
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789@#$%^&*(){}[]<>?/\\|~`';
     const fontSize = 13;
     let cols, drops;
+    let lastTimestamp = 0;
+    const interval = 45; // ms (~22 fps)
 
     function resize() {
         canvas.width  = container.offsetWidth;
@@ -123,18 +125,16 @@ function initMatrixRain(container) {
     window.addEventListener('resize', resize);
 
     function draw() {
-        // Rastro desvanecido (trail effect)
         ctx.fillStyle = 'rgba(5, 5, 8, 0.05)';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
         ctx.fillStyle = '#00ff88';
-        ctx.font      = `${fontSize}px 'Share Tech Mono', monospace`;
+        ctx.font = `${fontSize}px 'Share Tech Mono', monospace`;
 
         for (let i = 0; i < drops.length; i++) {
             const char = chars[Math.floor(Math.random() * chars.length)];
             ctx.fillText(char, i * fontSize, drops[i] * fontSize);
 
-            // Reinicia la columna aleatoriamente al llegar al final
             if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
                 drops[i] = 0;
             }
@@ -142,57 +142,64 @@ function initMatrixRain(container) {
         }
     }
 
-    setInterval(draw, 50);
+    function animate(timestamp) {
+        requestAnimationFrame(animate);
+        if (timestamp - lastTimestamp >= interval) {
+            lastTimestamp = timestamp;
+            draw();
+        }
+    }
+    requestAnimationFrame(animate);
 }
 
 
 // =============================================
 // 4. VALIDACIÓN DE LOGIN
-//    Con animación de sacudida en error
 // =============================================
 function validarLogin() {
     const u = document.getElementById('user').value.trim();
     const p = document.getElementById('pass').value.trim();
     const card = document.querySelector('.login-card');
 
-    if (u === "admin" && p === "1234") {
-        // Efecto de flash verde en éxito
+    if (u === 'admin' && p === '1234') {
         card.style.boxShadow = '0 0 60px #00ff88, inset 0 0 30px rgba(0,255,136,0.1)';
         card.style.transition = 'all 0.3s';
 
         setTimeout(() => {
+            // Detener partículas del login
+            loginParticles.stop();
+
             document.getElementById('login-screen').style.display = 'none';
             const main = document.getElementById('main-content');
             main.style.display = 'block';
-            // Iniciar partículas del main y matrix rain
+
+            // Iniciar partículas del main y lluvia Matrix
             initParticles('bg-particles');
             const heroSection = document.getElementById('inicio');
             if (heroSection) initMatrixRain(heroSection);
         }, 400);
 
     } else {
-        // Animación de sacudida en error
         card.classList.add('shake');
         card.style.borderColor = '#ff3e3e';
-        card.style.boxShadow   = '0 0 30px #ff3e3e, inset 0 0 20px rgba(255,62,62,0.1)';
+        card.style.boxShadow = '0 0 30px #ff3e3e, inset 0 0 20px rgba(255,62,62,0.1)';
         setTimeout(() => {
             card.classList.remove('shake');
             card.style.borderColor = '';
-            card.style.boxShadow   = '';
+            card.style.boxShadow = '';
         }, 600);
 
-        // Mensaje sin alert nativo — más elegante
         const hint = document.querySelector('.login-hint');
-        hint.style.color   = '#ff3e3e';
-        hint.textContent   = '// ACCESO DENEGADO — credenciales inválidas';
+        hint.style.color = '#ff3e3e';
+        hint.textContent = '// ACCESO DENEGADO — credenciales inválidas';
         setTimeout(() => {
-            hint.style.color  = '';
-            hint.textContent  = 'admin / 1234';
+            hint.style.color = '';
+            hint.textContent = 'admin / 1234';
         }, 2000);
     }
 }
 
-// Animación CSS de sacudida inyectada dinámicamente
+// Animación shake inyectada
 const shakeStyle = document.createElement('style');
 shakeStyle.textContent = `
 @keyframes shake {
@@ -204,7 +211,7 @@ shakeStyle.textContent = `
 `;
 document.head.appendChild(shakeStyle);
 
-// Enter para hacer login
+// Enter para login
 document.addEventListener('keydown', (e) => {
     if (e.key === 'Enter' && document.getElementById('login-screen').style.display !== 'none') {
         validarLogin();
@@ -214,19 +221,18 @@ document.addEventListener('keydown', (e) => {
 
 // =============================================
 // 5. ACTUALIZAR NOMBRE EN TIEMPO REAL
-//    Actualiza tanto el brand-name como su data-text (para el glitch)
 // =============================================
 function actualizarNombre() {
     const val  = document.getElementById('input-name').value;
     const name = document.getElementById('brand-name');
-    const text = val || "Sergio Gomez Portafolio";
-    name.innerText        = text;
-    name.dataset.text     = text;  // sincroniza el pseudo-elemento ::before y ::after del glitch
+    const text = val || 'Sergio G. Villalobo';
+    name.innerText = text;
+    name.dataset.text = text;   // sincroniza el glitch
 }
 
 
 // =============================================
-// 6. MENÚ DESPLEGABLE con transición del ícono
+// 6. MENÚ DESPLEGABLE
 // =============================================
 function toggleInfo() {
     const content = document.getElementById('info-extra');
@@ -246,13 +252,12 @@ function toggleInfo() {
 
 
 // =============================================
-// 7. CAMBIAR AVATAR — con animación de transición
+// 7. CAMBIAR AVATAR
 // =============================================
 function cambiarImagen() {
     const img  = document.getElementById('profile-img');
     const seed = Math.floor(Math.random() * 9999);
 
-    // Fade out → cambia src → fade in
     img.style.transition = 'opacity 0.3s, filter 0.3s';
     img.style.opacity    = '0';
     img.style.filter     = 'brightness(3)';
@@ -266,45 +271,32 @@ function cambiarImagen() {
 
 
 // =============================================
-// 8b. TOGGLE LINTERNA — ilumina/apaga toda la página
-//     Desactiva el overlay oscuro del flashlight
+// 8. TOGGLE LINTERNA (mediante clase en body)
 // =============================================
-let linternaActiva = true; // arranca con linterna (oscuro)
-
 function toggleLinterna() {
-    linternaActiva = !linternaActiva;
-    const fl  = document.getElementById('flashlight');
+    document.body.classList.toggle('flashlight-off');
     const btn = document.getElementById('btn-linterna');
 
-    if (!linternaActiva) {
-        // ILUMINADO: quita el overlay oscuro completamente
-        fl.style.transition = 'opacity 0.6s ease';
-        fl.style.opacity    = '0';
-        fl.style.pointerEvents = 'none';
+    if (document.body.classList.contains('flashlight-off')) {
         btn.textContent = '🔦 LINTERNA';
         btn.classList.add('active');
     } else {
-        // LINTERNA: restaura el efecto oscuro
-        fl.style.opacity    = '1';
         btn.textContent = '💡 ILUMINAR';
         btn.classList.remove('active');
     }
 }
 
 
+// =============================================
+// 9. CAMBIAR MODO (oscuro/claro)
+// =============================================
 function cambiarModo() {
     document.body.classList.toggle('light-theme');
-    // Actualizar placeholders en modo claro
-    const isDark = !document.body.classList.contains('light-theme');
-    document.documentElement.style.setProperty(
-        '--flashlight-opacity', isDark ? '0.97' : '0.5'
-    );
 }
 
 
 // =============================================
-// 9. MODIFICAR COLOR ACENTO DEL DOM
-//    Cicla entre paleta de colores Halloween
+// 10. MODIFICAR COLOR ACENTO
 // =============================================
 const accentColors = [
     { color: '#00ff88', glow: '0 0 8px #00ff88, 0 0 20px #00ff8855' },
@@ -329,8 +321,7 @@ function modificarDOM() {
 
 
 // =============================================
-// 10. AGREGAR/ELIMINAR PROYECTOS DINÁMICOS
-//     Con efecto de entrada animado por CSS
+// 11. AGREGAR PROYECTOS DINÁMICOS
 // =============================================
 function agregarElemento() {
     const input = document.getElementById('new-task');
@@ -356,7 +347,7 @@ function agregarElemento() {
     }
 
     document.getElementById('dynamic-list').appendChild(li);
-    input.value = "";
+    input.value = '';
     input.focus();
 }
 
@@ -369,18 +360,16 @@ document.addEventListener('keydown', (e) => {
 
 
 // =============================================
-// 11. VALIDAR FORMULARIO DE CONTACTO
-//     Con efecto de tipeo en el mensaje de éxito
+// 12. VALIDAR FORMULARIO DE CONTACTO
 // =============================================
 function validarForm(event) {
     event.preventDefault();
     const feedbackEl = document.getElementById('feedback-msg');
-    const message    = "// SISTEMA: Mensaje enviado con éxito. Contactaremos con su negocio pronto.";
+    const message    = '// SISTEMA: Mensaje enviado con éxito. Contactaremos con su negocio pronto.';
 
     feedbackEl.style.display = 'block';
     feedbackEl.innerText     = '';
 
-    // Efecto typewriter en el mensaje de feedback
     let i = 0;
     function typeChar() {
         if (i < message.length) {
@@ -393,7 +382,6 @@ function validarForm(event) {
 
     document.getElementById('contact-form').reset();
 
-    // Ocultar el mensaje después de 6 segundos
     setTimeout(() => {
         feedbackEl.style.animation = 'none';
         feedbackEl.style.opacity   = '0';
